@@ -52,18 +52,22 @@ def get_embedding_dimension(model_name: str | None = None) -> int:
         "Add its dimension to EMBEDDING_DIMENSIONS."
     )
 
+from langchain_huggingface import HuggingFaceEmbeddings
+
+_embeddings = None
+
 
 def get_embeddings():
     global _embeddings
 
     if _embeddings is None:
         _embeddings = HuggingFaceEmbeddings(
-            model_name=settings.embedding_model,
+            model_name="sentence-transformers/all-MiniLM-L6-v2",
             model_kwargs={
-                "device": "cpu",
+                "device": "cpu"
             },
             encode_kwargs={
-                "normalize_embeddings": True,
+                "normalize_embeddings": True
             },
         )
 
