@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{{ app_name }}</title>
+
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+<div class="app-shell">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+        <div class="brand-badge">FDE Project</div>
+
+        <h1>
+            IT Support<br>
+            Agentic RAG
+        </h1>
+
+        <p class="sidebar-description">
+            Private company knowledge first.
+            External web only when evidence is weak.
+        </p>
+
+        <div class="workflow-card">
+            <h3>LangGraph Workflow</h3>
+
+            <div class="workflow-step">1. Route question</div>
+            <div class="workflow-step">2. Retrieve private KB</div>
+            <div class="workflow-step">3. Grade evidence</div>
+            <div class="workflow-step">4. Web fallback if weak</div>
+            <div class="workflow-step">5. Rewrite & retry</div>
+            <div class="workflow-step">6. Grounded answer</div>
+        </div>
+
+        <button id="openUpload" class="document-btn">
+            + Add Company Document
+        </button>
+
+    </aside>
+
+
+    <!-- Main Chat Area -->
+    <main class="main-content">
+
+        <!-- Top Header -->
+        <header class="top-header">
+            <div class="product-name">
+                <span class="status-dot"></span>
+                Enterprise Knowledge Copilot
+            </div>
+
+            <div class="rag-badge">
+                Agentic RAG
+            </div>
+        </header>
+
+
+        <!-- Chat Section -->
+        <section class="chat-section">
+
+            <div id="chatMessages" class="chat-messages">
+
+                <div class="welcome-message">
+
+                    <div class="ai-icon">AI</div>
+
+                    <div class="message-card">
+                        <h3>How can I help with IT support?</h3>
+
+                        <p>
+                            Try: “How do I connect to the company VPN?”
+                            or ask a question that may require current
+                            external vendor information.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Suggested Questions -->
+            <div class="suggestions">
+
+                <button class="suggestion-btn">
+                    How do I connect to the company VPN?
+                </button>
+
+                <button class="suggestion-btn">
+                    What is our password reset policy?
+                </button>
+
+                <button class="suggestion-btn">
+                    What is the latest Microsoft Teams outage guidance?
+                </button>
+
+            </div>
+
+
+            <!-- Question Input -->
+            <form id="chatForm" class="composer">
+
+                <textarea
+                    id="question"
+                    rows="2"
+                    placeholder="Ask an IT support question..."
+                    required
+                ></textarea>
+
+                <button type="submit" class="ask-btn">
+                    Ask<br>Agent
+                </button>
+
+            </form>
+
+        </section>
+
+    </main>
+
+
+    <!-- Agent Trace -->
+    <aside class="trace-panel">
+
+        <h2>Agent Trace</h2>
+
+        <p>
+            Watch LangGraph decisions while the request runs.
+        </p>
+
+        <div id="trace-list" class="trace-list">
+            <div class="empty">
+                No request yet.
+            </div>
+        </div>
+
+        <div class="source-box">
+            <span>FINAL SOURCE</span>
+            <strong id="sourceUsed">—</strong>
+        </div>
+
+    </aside>
+
+</div>
+
+
+<!-- Upload Modal -->
+<div id="uploadModal" class="modal hidden">
+
+    <div class="modal-card">
+
+        <div class="modal-header">
+            <h2>Ingest Company Document</h2>
+
+            <button id="closeUpload" class="close-btn">
+                ×
+            </button>
+        </div>
+
+        <p>
+            Upload PDF, TXT, Markdown, or DOCX.
+        </p>
+
+        <label for="adminKey">Admin API Key</label>
+
+        <input
+            id="adminKey"
+            type="password"
+            placeholder="Enter Admin API key"
+        >
+
+        <label for="fileInput">Select Document</label>
+
+        <input
+            id="fileInput"
+            type="file"
+            accept=".pdf,.txt,.md,.docx"
+        >
+
+        <button id="uploadBtn" class="ask-btn">
+            Upload & Ingest
+        </button>
+
+        <div id="uploadStatus"></div>
+
+    </div>
+
+</div>
+
+
+<script src="/static/js/app.js"></script>
+
+</body>
+</html>

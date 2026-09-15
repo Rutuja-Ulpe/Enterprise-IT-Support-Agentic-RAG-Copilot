@@ -1,6 +1,9 @@
-from app.core.config import get_settings
+import uvicorn
 
-settings = get_settings()
-
-print(f"App Name: {settings.app_name}")
-print(f"App Environment: {settings.app_env}")
+if __name__ == "__main__":
+    uvicorn.run(
+        "app.main:app",
+        host="127.0.0.1",
+        port=8080,
+        reload=True
+    )
