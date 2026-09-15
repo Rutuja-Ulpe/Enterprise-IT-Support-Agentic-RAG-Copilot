@@ -62,3 +62,12 @@ def home(request: Request):
             "app_name": settings.app_name,
         },
     )
+
+
+# Health check endpoint for Render
+@app.get("/healthz")
+def health_check():
+    return {
+        "status": "healthy",
+        "service": settings.app_name,
+    }
