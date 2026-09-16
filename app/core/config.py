@@ -8,29 +8,38 @@ BASE_DIR = Path(__file__).resolve().parents[2]
 
 
 class Settings(BaseSettings):
+
     app_name: str = "Enterprise IT Support Agentic RAG Copilot"
     app_env: str = "development"
 
+    # OpenAI - optional
     openai_api_key: str = ""
 
+    # Groq
     groq_api_key: str = ""
     groq_model: str = "llama-3.1-8b-instant"
 
+    # Tavily
     tavily_api_key: str = ""
 
+    # Pinecone
     pinecone_api_key: str = ""
     pinecone_index_name: str = "fde-it-support-rag"
     pinecone_namespace: str = "company-it-kb"
 
+    # Local Hugging Face embedding model
     embedding_model: str = (
         "sentence-transformers/all-MiniLM-L6-v2"
     )
 
+    # RAG
     top_k: int = 4
     max_retries: int = 1
 
+    # Admin
     admin_api_key: str = "change-me"
 
+    # Paths
     audit_db_path: str = str(
         BASE_DIR / "data" / "audit.db"
     )

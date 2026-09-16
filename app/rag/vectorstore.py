@@ -14,47 +14,32 @@ _vectorstore = None
 
 
 EMBEDDING_DIMENSIONS = {
-    "text-embedding-3-small": 1536,
     "sentence-transformers/all-MiniLM-L6-v2": 384,
     "all-minilm-l6-v2": 384,
+    "text-embedding-3-small": 1536,
 }
 
 
 def get_embedding_dimension(model_name: str | None = None) -> int:
-    name = (
-        model_name or settings.embedding_model or ""
-    ).strip()
+    name = (model_name or settings.embedding_model or "").strip()
 
     if not name:
-        raise RuntimeError(
-            "Embedding model is not configured"
-        )
+        raise RuntimeError("Embedding model is not configured")
 
     normalized = name.lower()
 
     if normalized in EMBEDDING_DIMENSIONS:
         return EMBEDDING_DIMENSIONS[normalized]
 
-    if "text-embedding-3-small" in normalized:
-        return 1536
-
-    if "text-embedding-3-large" in normalized:
-        return 3072
-
-    if "text-embedding-ada-002" in normalized:
-        return 1536
-
     if "all-minilm" in normalized:
         return 384
 
+    if "text-embedding-3-small" in normalized:
+        return 1536
+
     raise ValueError(
-        f"Unsupported embedding model '{name}'. "
-        "Add its dimension to EMBEDDING_DIMENSIONS."
+        f"Unknown embedding model '{model_name}'."
     )
-
-from langchain_huggingface import HuggingFaceEmbeddings
-
-_embeddings = None
 
 
 def get_embeddings():
@@ -62,13 +47,9 @@ def get_embeddings():
 
     if _embeddings is None:
         _embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2",
-            model_kwargs={
-                "device": "cpu"
-            },
-            encode_kwargs={
-                "normalize_embeddings": True
-            },
+            model_name=settings.embedding_model,
+            model_kwargs={"device": "cpu"},
+            encode_kwargs={"normalize_embeddings": True},
         )
 
     return _embeddings
@@ -77,58 +58,23 @@ def get_embeddings():
 def ensure_index():
     if not settings.pinecone_api_key:
         raise RuntimeError(
-            "PINECONE_API_KEY is missing"
+            "PINECONE_API_KEY is not configured."
         )
 
-    desired_dimension = get_embedding_dimension()
-
-    pinecone_client = Pinecone(
+    pc = Pinecone(
         api_key=settings.pinecone_api_key
     )
 
-    index_names = [
-        item["name"]
-        for item in pinecone_client.list_indexes()
-    ]
+    existing_indexes = pc.list_indexes().names()
 
-    index_name = settings.pinecone_index_name
+    dimension = get_embedding_dimension(
+        settings.embedding_model
+    )
 
-    if index_name in index_names:
-        index_info = pinecone_client.describe_index(
-            index_name
-        )
-
-        current_dimension = getattr(
-            index_info,
-            "dimension",
-            None,
-        )
-
-        if current_dimension is None and isinstance(
-            index_info,
-            dict,
-        ):
-            current_dimension = index_info.get(
-                "dimension"
-            )
-
-        if (
-            current_dimension is not None
-            and current_dimension != desired_dimension
-        ):
-            raise RuntimeError(
-                f"Pinecone index '{index_name}' has "
-                f"dimension {current_dimension}, but "
-                f"the embedding model requires "
-                f"dimension {desired_dimension}. "
-                "Create a new index or update the "
-                "embedding model."
-            )
-
-    else:
-        pinecone_client.create_index(
-            name=index_name,
-            dimension=desired_dimension,
+    if settings.pinecone_index_name not in existing_indexes:
+        pc.create_index(
+            name=settings.pinecone_index_name,
+            dimension=dimension,
             metric="cosine",
             spec=ServerlessSpec(
                 cloud="aws",
@@ -136,21 +82,11 @@ def ensure_index():
             ),
         )
 
-        print(
-            f"Creating Pinecone index '{index_name}'..."
-        )
+        time.sleep(2)
 
-        while True:
-            status = pinecone_client.describe_index(
-                index_name
-            ).status
-
-            if status["ready"]:
-                break
-
-            time.sleep(1)
-
-    return pinecone_client.Index(index_name)
+    return pc.Index(
+        settings.pinecone_index_name
+    )
 
 
 def get_vectorstore():
@@ -170,15 +106,10 @@ def get_vectorstore():
 
 def get_retriever():
     return get_vectorstore().as_retriever(
-        search_kwargs={
-            "k": settings.top_k,
-        }
+        search_kwargs={"k": settings.top_k}
     )
 
 
 def add_documents(chunks):
-    if not chunks:
-        return []
-
-    store = get_vectorstore()
-    return store.add_documents(chunks)
+    vectorstore = get_vectorstore()
+    return vectorstore.add_documents(chunks)
